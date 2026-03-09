@@ -1,0 +1,8 @@
+.env
+.env.local
+*.log
+db_storage/
+n8n_storage/
+downloads/
+node_modules/
+.DS_Store

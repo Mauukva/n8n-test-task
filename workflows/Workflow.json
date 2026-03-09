@@ -1,0 +1,654 @@
+{
+  "name": "Workflow",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "news-autoposter",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "14372d3d-f0d0-4eac-823c-b38df87f795c",
+      "name": "Webhook Trigger",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        304,
+        352
+      ],
+      "webhookId": "5d528dd5-bcb0-406f-bee0-de8e9ef90993"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 1
+          },
+          "conditions": [
+            {
+              "id": "url-check",
+              "leftValue": "={{ $json.body.url }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "isNotEmpty"
+              }
+            },
+            {
+              "id": "1550c3ea-39f1-4410-b16c-c6cd9edbe0c9",
+              "leftValue": "",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            },
+            {
+              "id": "a45bbcc2-2fe1-416e-a435-f13386ddd338",
+              "leftValue": "",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "f4ed096e-fe93-4de8-9531-f721b39508cc",
+      "name": "Validate Input",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        528,
+        352
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.groq.com/openai/v1/audio/transcriptions",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "=Bearer {{ $env.GROQ_API_KEY }}"
+            }
+          ]
+        },
+        "sendBody": true,
+        "contentType": "multipart-form-data",
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "model",
+              "value": "whisper-large-v3"
+            },
+            {
+              "parameterType": "formBinaryData",
+              "name": "file",
+              "inputDataFieldName": "data"
+            },
+            {
+              "name": "language",
+              "value": "ru"
+            }
+          ]
+        },
+        "options": {
+          "timeout": 120000
+        }
+      },
+      "id": "4e62b4e6-bcbb-47bb-9ae9-078911bbd0ea",
+      "name": "Transcribe (Whisper)",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1552,
+        32
+      ],
+      "retryOnFail": true,
+      "waitBetweenTries": null,
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "gSxRTghmL8twF31C",
+          "name": "Transcription"
+        }
+      },
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "schema": {
+          "value": "public"
+        },
+        "table": {
+          "value": "news_posts"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {},
+          "matchingColumns": [],
+          "schema": [],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false,
+          "values": {
+            "mappings": [
+              {
+                "columnName": "source_url",
+                "value": "={{ $('Webhook Trigger').item.json.body.url }}"
+              },
+              {
+                "columnName": "transcript",
+                "value": "={{ $('Transcribe (Whisper)').item.json.text }}"
+              },
+              {
+                "columnName": "post_text",
+                "value": "={{ $json.message.content }}"
+              },
+              {
+                "columnName": "status",
+                "value": "published"
+              },
+              {
+                "columnName": "created_at",
+                "value": "={{ $now.toISO() }}"
+              }
+            ]
+          }
+        },
+        "options": {}
+      },
+      "id": "6c3f185d-6f54-419f-8d65-45daa1758ef6",
+      "name": "Save to PostgreSQL",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.5,
+      "position": [
+        2016,
+        32
+      ],
+      "credentials": {
+        "postgres": {
+          "id": "Y91PTOLYL3RHQgVQ",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $env.TELEGRAM_CHAT_ID }}",
+        "text": "={{ $('Generate Post (AI)(test)').item.json.message.content }}",
+        "additionalFields": {
+          "parse_mode": "Markdown"
+        }
+      },
+      "id": "3818e4b1-cd81-4b72-8d31-8aeac6d03031",
+      "name": "Send to Telegram",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        2224,
+        32
+      ],
+      "webhookId": "f71435a6-b377-4bb6-89a1-e7a93f19ec96",
+      "retryOnFail": true,
+      "waitBetweenTries": 5000,
+      "maxTries": 2,
+      "credentials": {
+        "telegramApi": {
+          "id": "CyrB3ZHKknba2do6",
+          "name": "Telegram account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "content": "## После того, как Вы развернули n8n, заполнить недостающие ноды или дополните воркфлоу, если этого требует ТЗ или у Вас есть другой подход\n\n## Оставить нотисы, объяснить решение.\n\n**Double click** to edit me. [Guide](https://docs.n8n.io/workflows/components/sticky-notes/)",
+        "height": 336,
+        "width": 400,
+        "color": 6
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        0,
+        0
+      ],
+      "id": "17682b70-9f37-43de-b51e-80e20cff8899",
+      "name": "Sticky Note"
+    },
+    {
+      "parameters": {
+        "command": "=yt-dlp -x --audio-format mp3 -o \"/home/node/downloads/%(id)s.mp3\" \"{{ $json.body.url }}\""
+      },
+      "type": "n8n-nodes-base.executeCommand",
+      "typeVersion": 1,
+      "position": [
+        832,
+        48
+      ],
+      "id": "6224f565-a1f1-4995-a7b4-f4e5baa3ca51",
+      "name": "Download Audio (yt-dlp)",
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://openrouter.ai/api/v1/chat/completions",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"model\": \"openai/gpt-4o-mini\",\n  \"messages\": [\n    {\n      \"role\": \"user\",\n      \"content\": \"Создай новостной пост из следующей транскрипции видео:\\n\\n{{ $json.text }}\\n\\nФормат:\\n- Заголовок (жирный)\\n- Краткое изложение (2-3 абзаца)\\n- Хэштеги\\n\\nТон: информационный, профессиональный.\"\n    }\n  ],\n  \"temperature\": 0.7\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1776,
+        32
+      ],
+      "id": "a96e7e2c-d473-4b9e-bc9a-773c70fcc646",
+      "name": "Generate Post (AI)",
+      "retryOnFail": true,
+      "waitBetweenTries": 5000,
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "GM9NFvbxDD4FN8R6",
+          "name": "OpenAI"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "schema": {
+          "__rl": true,
+          "mode": "list",
+          "value": "public"
+        },
+        "table": {
+          "__rl": true,
+          "value": "error_logs",
+          "mode": "list",
+          "cachedResultName": "error_logs"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "node_name": "{{ $node.name }}",
+            "error_message": "{{ $json.error.message }}",
+            "input_data": "{{ $json }}",
+            "created_at": "={{ $now.toISO() }}",
+            "id": 0
+          },
+          "matchingColumns": [
+            "id"
+          ],
+          "schema": [
+            {
+              "id": "id",
+              "displayName": "id",
+              "required": false,
+              "defaultMatch": true,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "node_name",
+              "displayName": "node_name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "error_message",
+              "displayName": "error_message",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "input_data",
+              "displayName": "input_data",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "object",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "created_at",
+              "displayName": "created_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "dateTime",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        1584,
+        528
+      ],
+      "id": "66e600e7-c5fc-4cc8-8378-d64bf98df917",
+      "name": "Error → Alert",
+      "credentials": {
+        "postgres": {
+          "id": "Y91PTOLYL3RHQgVQ",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "{\n  \"status\": \"success\",\n  \"message\": \"Post created and published\"\n}",
+        "options": {
+          "responseCode": 200
+        }
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.4,
+      "position": [
+        2608,
+        32
+      ],
+      "id": "65ad19c2-5efa-47b7-8f9f-404d343695d4",
+      "name": "Respond success"
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $env.TELEGRAM_CHAT_ID }}",
+        "text": "=❌ *Ошибка в workflow*\n\nНода: {{ $node.name }}\nОшибка: {{ $json.error.message }}\n\nВремя: {{ $now.toISO() }}",
+        "additionalFields": {
+          "parse_mode": "MarkdownV2"
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        976,
+        608
+      ],
+      "id": "c23d9e99-5f0c-43ac-ba64-ad6cb4e42c67",
+      "name": "Error → Alert1",
+      "webhookId": "78414760-7d57-47b4-8f62-2b2776a5fcad",
+      "credentials": {
+        "telegramApi": {
+          "id": "CyrB3ZHKknba2do6",
+          "name": "Telegram account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "schema": {
+          "__rl": true,
+          "mode": "list",
+          "value": "public"
+        },
+        "table": {
+          "__rl": true,
+          "value": "error_logs",
+          "mode": "list",
+          "cachedResultName": "error_logs"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "node_name": "{{ $node.name }}",
+            "error_message": "{{ $json.error.message }}",
+            "input_data": "{{ $json }}",
+            "created_at": "={{ $now.toISO() }}",
+            "id": 0
+          },
+          "matchingColumns": [
+            "id"
+          ],
+          "schema": [
+            {
+              "id": "id",
+              "displayName": "id",
+              "required": false,
+              "defaultMatch": true,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "node_name",
+              "displayName": "node_name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "error_message",
+              "displayName": "error_message",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "input_data",
+              "displayName": "input_data",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "object",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "created_at",
+              "displayName": "created_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "dateTime",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        800,
+        608
+      ],
+      "id": "582c6005-3a88-41af-b33b-5e9ff4ac9912",
+      "name": "Error → Alert2",
+      "credentials": {
+        "postgres": {
+          "id": "Y91PTOLYL3RHQgVQ",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "command": "rm -f /home/node/downloads/*.mp3"
+      },
+      "type": "n8n-nodes-base.executeCommand",
+      "typeVersion": 1,
+      "position": [
+        2400,
+        32
+      ],
+      "id": "12541d9d-661d-490f-8355-71362b86e587",
+      "name": "Cleanup Files"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Webhook Trigger": {
+      "main": [
+        [
+          {
+            "node": "Validate Input",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Validate Input": {
+      "main": [
+        [
+          {
+            "node": "Download Audio (yt-dlp)",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Error → Alert2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Transcribe (Whisper)": {
+      "main": [
+        [
+          {
+            "node": "Generate Post (AI)",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Error → Alert",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Save to PostgreSQL": {
+      "main": [
+        [
+          {
+            "node": "Send to Telegram",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send to Telegram": {
+      "main": [
+        [
+          {
+            "node": "Cleanup Files",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Download Audio (yt-dlp)": {
+      "main": [
+        [
+          {
+            "node": "Transcribe (Whisper)",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Error → Alert",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Generate Post (AI)": {
+      "main": [
+        [
+          {
+            "node": "Save to PostgreSQL",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Error → Alert2": {
+      "main": [
+        [
+          {
+            "node": "Error → Alert1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Cleanup Files": {
+      "main": [
+        [
+          {
+            "node": "Respond success",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "fccc7341-eef8-459c-9f9d-379d0ebb5c9f",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "82e2299cfae328ee5fd3391696e3ca04987306b0aefcad3a77fb77ea77d8bf32"
+  },
+  "id": "hKh3X1uvfpCpM5nN",
+  "tags": [
+    {
+      "createdAt": "2026-03-09T13:19:59.991Z",
+      "updatedAt": "2026-03-09T13:19:59.991Z",
+      "id": "3cIfA8NjNYqkeBjH",
+      "name": "тестовое-задание"
+    }
+  ]
+}
