@@ -13,8 +13,8 @@
       "type": "n8n-nodes-base.webhook",
       "typeVersion": 2,
       "position": [
-        304,
-        352
+        544,
+        288
       ],
       "webhookId": "5d528dd5-bcb0-406f-bee0-de8e9ef90993"
     },
@@ -57,8 +57,8 @@
       "type": "n8n-nodes-base.if",
       "typeVersion": 2,
       "position": [
-        528,
-        352
+        800,
+        288
       ]
     },
     {
@@ -104,8 +104,8 @@
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
       "position": [
-        2592,
-        32
+        2256,
+        272
       ],
       "retryOnFail": true,
       "waitBetweenTries": null,
@@ -130,8 +130,8 @@
       "type": "n8n-nodes-base.postgres",
       "typeVersion": 2.5,
       "position": [
-        3264,
-        32
+        2912,
+        256
       ],
       "credentials": {
         "postgres": {
@@ -154,8 +154,8 @@
       "type": "n8n-nodes-base.telegram",
       "typeVersion": 1.2,
       "position": [
-        3504,
-        32
+        3120,
+        256
       ],
       "webhookId": "f71435a6-b377-4bb6-89a1-e7a93f19ec96",
       "retryOnFail": true,
@@ -178,8 +178,8 @@
       "type": "n8n-nodes-base.stickyNote",
       "typeVersion": 1,
       "position": [
-        0,
-        0
+        -1200,
+        -768
       ],
       "id": "17682b70-9f37-43de-b51e-80e20cff8899",
       "name": "Sticky Note"
@@ -191,8 +191,8 @@
       "type": "n8n-nodes-base.executeCommand",
       "typeVersion": 1,
       "position": [
-        1456,
-        48
+        1824,
+        416
       ],
       "id": "6224f565-a1f1-4995-a7b4-f4e5baa3ca51",
       "name": "Download Audio (yt-dlp)",
@@ -212,8 +212,8 @@
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
       "position": [
-        2816,
-        32
+        2512,
+        256
       ],
       "id": "a96e7e2c-d473-4b9e-bc9a-773c70fcc646",
       "name": "Generate Post (AI)",
@@ -306,8 +306,8 @@
       "type": "n8n-nodes-base.postgres",
       "typeVersion": 2.6,
       "position": [
-        2624,
-        528
+        2240,
+        560
       ],
       "id": "66e600e7-c5fc-4cc8-8378-d64bf98df917",
       "name": "Error → Alert",
@@ -329,8 +329,8 @@
       "type": "n8n-nodes-base.respondToWebhook",
       "typeVersion": 1.4,
       "position": [
-        3904,
-        48
+        3504,
+        256
       ],
       "id": "65ad19c2-5efa-47b7-8f9f-404d343695d4",
       "name": "Respond success"
@@ -338,7 +338,7 @@
     {
       "parameters": {
         "chatId": "={{ $env.TELEGRAM_CHAT_ID }}",
-        "text": "=❌ *Ошибка в workflow*\n\n{{ $('Error → Alert2').first().json.error_message }}\n\nВремя: {{ $now.toISO() }}",
+        "text": "=❌ *Ошибка в workflow*\n\n\nВремя: {{ $now.toISO() }}",
         "additionalFields": {
           "appendAttribution": false,
           "parse_mode": "Markdown"
@@ -347,8 +347,8 @@
       "type": "n8n-nodes-base.telegram",
       "typeVersion": 1.2,
       "position": [
-        1392,
-        608
+        832,
+        656
       ],
       "id": "c23d9e99-5f0c-43ac-ba64-ad6cb4e42c67",
       "name": "Error → Alert1",
@@ -440,8 +440,8 @@
       "type": "n8n-nodes-base.postgres",
       "typeVersion": 2.6,
       "position": [
-        1216,
-        608
+        624,
+        656
       ],
       "id": "582c6005-3a88-41af-b33b-5e9ff4ac9912",
       "name": "Error → Alert2",
@@ -459,8 +459,8 @@
       "type": "n8n-nodes-base.executeCommand",
       "typeVersion": 1,
       "position": [
-        3712,
-        32
+        3312,
+        256
       ],
       "id": "12541d9d-661d-490f-8355-71362b86e587",
       "name": "Cleanup Files"
@@ -473,8 +473,8 @@
       "type": "n8n-nodes-base.readWriteFile",
       "typeVersion": 1,
       "position": [
-        2128,
-        32
+        2016,
+        272
       ],
       "id": "5e8de643-9938-4764-9f40-ecb6c4e0ef74",
       "name": "Read/Write Files from Disk"
@@ -486,8 +486,8 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        3024,
-        32
+        2720,
+        256
       ],
       "id": "5ef130d2-551b-4cf1-8b4a-bf4f4bd9c9e4",
       "name": "Code in JavaScript"
@@ -499,8 +499,8 @@
       "type": "n8n-nodes-base.executeCommand",
       "typeVersion": 1,
       "position": [
-        1200,
-        48
+        1584,
+        416
       ],
       "id": "25bb999d-0c50-46bb-9abf-97278149389b",
       "name": "Delete Cash audio"
@@ -509,13 +509,14 @@
       "parameters": {
         "content": "## Технические решения и архитектурные заметки\n\n### Выбор Groq Whisper API вместо OpenAI Whisper\nРаботодатель предоставил ключ OpenRouter, который поддерживает только текстовые LLM модели, но не Whisper API. Решение: использовать **Groq Whisper API** (бесплатный, совместим с OpenAI Whisper API format).\n\n### Cleanup стратегия\nДобавлена нода **Cleanup Before Download** для очистки `/tmp/*.mp3` перед каждым запуском. Это предотвращает обработку старых файлов при повторных запусках workflow.\n\n### PostgreSQL Insert через Execute Query\nВ n8n 1.112.5 обнаружен баг с \"Postgres Insert\" нодой (не видит колонки при Map Automatically/Manually). Решение: использовать **Execute Query** с параметризованными запросами (`$1, $2, $3...`) для безопасности и стабильности.\n\n### Code Node для подготовки данных\nПеред сохранением в PostgreSQL используется Code Node для формирования структурированного объекта с полями БД. Это упрощает маппинг и делает workflow более читаемым.\n\n### Retry логика\n- Whisper API: 3 попытки с задержкой 5000ms (транскрибация может быть нестабильной)\n- OpenRouter LLM: 3 попытки с задержкой 5000ms\n- Telegram API: 2 попытки с задержкой 5000ms\n\n### Error handling\nДвухуровневая обработка ошибок:\n1. **Alert2** → сохранение в `error_logs` таблицу\n2. **Alert1** → уведомление в Telegram (parse_mode=None для избежания конфликтов с Markdown)\nEOF\n",
         "height": 736,
-        "width": 1200
+        "width": 1200,
+        "color": 3
       },
       "type": "n8n-nodes-base.stickyNote",
       "typeVersion": 1,
       "position": [
-        0,
-        -784
+        -752,
+        80
       ],
       "id": "a35e71b2-d831-49ab-81fe-fa2445063476",
       "name": "Sticky Note1"
@@ -531,8 +532,8 @@
       "type": "n8n-nodes-base.postgres",
       "typeVersion": 2.6,
       "position": [
-        768,
-        224
+        1104,
+        272
       ],
       "id": "c2c76178-7951-4024-9c2c-74d4d815b3ff",
       "name": "Check Duplicate",
@@ -572,8 +573,8 @@
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.2,
       "position": [
-        976,
-        224
+        1328,
+        272
       ],
       "id": "67ced219-55fd-4500-9c3c-f47b1f10b063",
       "name": "Duplicate Check"
@@ -607,11 +608,85 @@
       "type": "n8n-nodes-base.set",
       "typeVersion": 3.4,
       "position": [
-        1184,
-        320
+        1120,
+        512
       ],
       "id": "42388db9-9f7f-4988-9e91-c304de331e09",
       "name": "Already Processed"
+    },
+    {
+      "parameters": {
+        "content": "## Дедупликация\n\n### Проверка дубликатов URL перед обработкой.\nЕсли видео уже в базе? возврат 409.\nЭкономия API токены и времени.",
+        "height": 560,
+        "width": 464
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        1040,
+        80
+      ],
+      "id": "04473591-6080-43cd-b91d-79b0752e0349",
+      "name": "Sticky Note2"
+    },
+    {
+      "parameters": {
+        "content": "⚠️ Обработка ошибок\n\n1. Логирование в таблицу error_logs\n2. Уведомление в Telegram\n\nRetry: Whisper/LLM - 3 попытки, Telegram - 2",
+        "height": 320,
+        "width": 416
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        592,
+        496
+      ],
+      "id": "6ae93a89-922c-4294-bf4d-f41b8200106e",
+      "name": "Sticky Note3"
+    },
+    {
+      "parameters": {
+        "content": "## Удаление аудиозаписи\n\nУдаление /tmp/*.mp3 перед каждым запуском.\nПредотвращает обработку старых файлов\nиз кэша предыдущих запусков.",
+        "height": 560
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        1520,
+        80
+      ],
+      "id": "4c8a2165-b5cf-449b-b17e-596bbe8aaa5a",
+      "name": "Sticky Note4"
+    },
+    {
+      "parameters": {
+        "content": "## Groq Whisper API\n\nOpenRouter не поддерживает Whisper.\nРешение: Groq Whisper (бесплатный).\nПараметры: language=ru, model=whisper-large-v3",
+        "height": 432,
+        "width": 224
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        2192,
+        0
+      ],
+      "id": "34c1d774-8ee5-4a7b-ae23-347c622bf1bf",
+      "name": "Sticky Note5"
+    },
+    {
+      "parameters": {
+        "content": "## Execute Query вместо Insert\n\n### Баг версии n8n 1.x\n",
+        "height": 432,
+        "width": 224
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        2848,
+        16
+      ],
+      "id": "4a61b485-baa8-4b92-b1b3-4182d4bc670d",
+      "name": "Sticky Note6"
     }
   ],
   "pinData": {},
@@ -803,7 +878,7 @@
   "settings": {
     "executionOrder": "v1"
   },
-  "versionId": "12af1782-20df-48f2-8823-b0fe9c12ced3",
+  "versionId": "da5208f2-2dd6-456f-b29a-5577c105bc30",
   "meta": {
     "templateCredsSetupCompleted": true,
     "instanceId": "82e2299cfae328ee5fd3391696e3ca04987306b0aefcad3a77fb77ea77d8bf32"
